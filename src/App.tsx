@@ -1,18 +1,42 @@
-import React from 'react';
-// import carsFromServer from './api/cars';
-// import colorsFromServer from './api/colors';
+import React, { useState } from 'react';
+import carsFromServer from './api/cars';
+import colorsFromServer from './api/colors';
 
-// 1. Render car with color
-// 2. Add ability to filter car by brand name
-// 3. Add ability to filter car by color
+const mergedCars = carsFromServer.map(car => {
+  const color = colorsFromServer.find(c => c.id === car.colorId);
+
+  return {
+    color,
+    ...car,
+  };
+});
 
 export const App: React.FC = () => {
+  const [findCarId, setFindCarId] = useState('');
+
+  let visibleCars = [...mergedCars];
+
+  if (findCarId) {
+    const carToLowerCase = findCarId.toLowerCase().trim();
+
+    visibleCars = visibleCars
+      .filter(car => car.brand.toLowerCase().includes(carToLowerCase));
+  }
+
   return (
     <div>
-      <input type="search" placeholder="Find by car brand" />
+      <input
+        type="search"
+        placeholder="Find by car brand"
+        value={findCarId}
+        onChange={(event) => setFindCarId(event.target.value)}
+      />
 
       <select>
         <option>Chose a color</option>
+        {colorsFromServer.map(color => (
+          <option>{color.name}</option>
+        ))}
       </select>
 
       <table>
@@ -25,24 +49,15 @@ export const App: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>1</td>
-            <td>Ferarri</td>
-            <td style={{ color: 'red' }}>Red</td>
-            <td>500</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Opel</td>
-            <td style={{ color: 'white' }}>White</td>
-            <td>300</td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>Audi</td>
-            <td style={{ color: 'black' }}>Black</td>
-            <td>300</td>
-          </tr>
+
+          {visibleCars.map(car => (
+            <tr>
+              <td>{car.id}</td>
+              <td>{car.brand}</td>
+              <td>{car.color?.name}</td>
+              <td>{car.rentPrice}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
